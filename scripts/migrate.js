@@ -13,9 +13,7 @@ const config = {
     port: process.env.DB_PORT || 5432,
     database: 'brutalist_dev',
     user: process.platform === 'darwin' ? process.env.USER : 'postgres',
-    schema: 'public'
   },
-  searchPath: ['public'],
   migrations: {
     directory: join(__dirname, '../database/migrations')
   },
@@ -29,14 +27,6 @@ async function runMigrations() {
     console.log('Testing database connection...');
     await db.raw('SELECT 1');
     console.log('Database connection successful!');
-
-    // Force set search path
-    await db.raw('SET search_path TO public');
-
-    // Drop existing tables if they exist
-    await db.raw('DROP TABLE IF EXISTS public.knex_migrations CASCADE');
-    await db.raw('DROP TABLE IF EXISTS public.knex_migrations_lock CASCADE');
-    await db.raw('DROP TABLE IF EXISTS public.articles CASCADE');
 
     console.log('Running migrations...');
     const [batchNo, log] = await db.migrate.latest();
