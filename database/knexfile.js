@@ -10,11 +10,11 @@ const config = {
   connection: {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
-    database: 'brutalist_dev',
-    user: process.platform === 'darwin' ? process.env.USER : 'postgres',
+    database: process.env.DB_NAME || 'brutalist_dev',
+    user: process.env.DB_USER || (process.platform === 'darwin' ? process.env.USER : 'postgres'),
   },
   migrations: {
-    directory: join(__dirname, '../database/migrations')
+    directory: join(__dirname, 'migrations')
   },
   debug: true
 };
