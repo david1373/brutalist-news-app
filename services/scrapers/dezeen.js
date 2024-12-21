@@ -6,7 +6,9 @@ const db = knex(config);
 
 export async function scrapeDezeenArticles(limit = 10) {
   const browser = await puppeteer.launch({
-    headless: 'new'
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    timeout: 30000
   });
 
   try {
@@ -15,33 +17,51 @@ export async function scrapeDezeenArticles(limit = 10) {
     
     console.log('Navigating to Dezeen...');
     await page.goto('https://www.dezeen.com/architecture', {
-      waitUntil: 'networkidle0'
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
     });
 
-    console.log('Extracting article links...');
+    // Wait for articles to load
+    await page.waitForSelector('article.article', { timeout: 10000 });
+    
+    console.log('Page loaded, looking for articles...');
+    
+    // Debug: Log the page content
+    const pageTitle = await page.title();
+    console.log('Page title:', pageTitle);
+    
     const articles = await page.evaluate((limit) => {
+      console.log('Starting article extraction...');
       const articleNodes = document.querySelectorAll('article.article');
+      console.log('Found article nodes:', articleNodes.length);
+      
       const articles = [];
       
       for (let i = 0; i < Math.min(articleNodes.length, limit); i++) {
         const article = articleNodes[i];
-        const link = article.querySelector('a.article-featured__link');
+        const link = article.querySelector('a.article-featured__link, a.article__link');
         const image = article.querySelector('img');
         
-        articles.push({
-          url: link?.href,
-          title: link?.getAttribute('title'),
-          featuredImage: image?.src
-        });
+        if (link) {
+          articles.push({
+            url: link.href,
+            title: link.getAttribute('title') || link.textContent.trim(),
+            featuredImage: image ? image.src : null
+          });
+        }
       }
       
       return articles;
     }, limit);
 
-    console.log(`Found ${articles.length} articles`);
+    console.log(`Found ${articles.length} articles:`);
+    console.log(JSON.stringify(articles, null, 2));
 
     for (const article of articles) {
-      if (!article.url) continue;
+      if (!article.url) {
+        console.log('Skipping article with no URL');
+        continue;
+      }
 
       // Check if article already exists
       const exists = await db('articles')
@@ -54,13 +74,16 @@ export async function scrapeDezeenArticles(limit = 10) {
       }
 
       console.log(`Processing article: ${article.title}`);
-      await page.goto(article.url, { waitUntil: 'networkidle0' });
+      await page.goto(article.url, { 
+        waitUntil: 'domcontentloaded',
+        timeout: 30000
+      });
 
       const content = await page.evaluate(() => {
-        const article = document.querySelector('.article__content');
-        const author = document.querySelector('.article__author-name');
+        const article = document.querySelector('.article__content, .article-body');
+        const author = document.querySelector('.article__author-name, .author-name');
         const date = document.querySelector('time');
-        const images = Array.from(document.querySelectorAll('.article__content img'))
+        const images = Array.from(document.querySelectorAll('.article__content img, .article-body img'))
           .map(img => ({
             url: img.src,
             caption: img.alt,
@@ -68,12 +91,17 @@ export async function scrapeDezeenArticles(limit = 10) {
           }));
 
         return {
-          content: article?.innerText,
-          author: author?.innerText,
-          publishedDate: date?.getAttribute('datetime'),
+          content: article ? article.innerText : null,
+          author: author ? author.innerText : null,
+          publishedDate: date ? date.getAttribute('datetime') : null,
           images
         };
       });
+
+      if (!content.content) {
+        console.log('No content found for article:', article.title);
+        continue;
+      }
 
       await db('articles').insert({
         title: article.title,
@@ -88,7 +116,8 @@ export async function scrapeDezeenArticles(limit = 10) {
       });
 
       console.log(`Saved article: ${article.title}`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Add a delay between requests
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
 
     return { success: true, count: articles.length };
