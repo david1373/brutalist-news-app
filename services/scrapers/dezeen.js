@@ -17,10 +17,22 @@ export async function scrapeDezeenArticles(limit = 10) {
 
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
     
-    // Set a more realistic user agent
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+    // Enable request interception
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+      // Block image, font, and stylesheet requests to speed up loading
+      if (request.resourceType() === 'image' || 
+          request.resourceType() === 'font' || 
+          request.resourceType() === 'stylesheet') {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
+
+    // Log console messages from the page
+    page.on('console', msg => console.log('PAGE LOG:', msg.text()));
     
     console.log('Navigating to Dezeen...');
     const response = await page.goto('https://www.dezeen.com/architecture/', {
@@ -29,72 +41,65 @@ export async function scrapeDezeenArticles(limit = 10) {
     });
 
     console.log('Response status:', response.status());
-    console.log('Page loaded, analyzing content...');
+    console.log('Response headers:', response.headers());
 
-    // Debug: Take a screenshot
-    await page.screenshot({ path: 'debug-screenshot.png' });
-    
-    // Wait for any article-like content
-    await page.waitForSelector('.article, .post, .article-block', { timeout: 20000 });
-    
-    // Debug: Log the page title
-    const pageTitle = await page.title();
-    console.log('Page title:', pageTitle);
+    // Handle cookie consent if present
+    try {
+      await page.waitForSelector('#CybotCookiebotDialog', { timeout: 5000 });
+      console.log('Cookie dialog found, accepting...');
+      await page.click('#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll');
+      await page.waitForTimeout(2000);
+    } catch (e) {
+      console.log('No cookie dialog found or already accepted');
+    }
 
-    // Debug: Log HTML structure
-    const bodyHTML = await page.evaluate(() => document.body.innerHTML);
-    console.log('First 500 chars of HTML:', bodyHTML.substring(0, 500));
-    
-    const articles = await page.evaluate((limit) => {
-      // Try multiple possible selectors
-      const selectors = [
-        'article',
-        '.article',
-        '.post',
-        '.article-block',
-        '[data-post-type="article"]'
-      ];
+    // Take a screenshot before any manipulation
+    await page.screenshot({ path: 'before-scroll.png' });
 
-      let articleNodes = [];
-      for (const selector of selectors) {
-        const nodes = document.querySelectorAll(selector);
-        if (nodes.length > 0) {
-          console.log(`Found ${nodes.length} articles with selector: ${selector}`);
-          articleNodes = nodes;
-          break;
-        }
-      }
+    // Scroll down to trigger lazy loading
+    console.log('Scrolling page...');
+    await page.evaluate(() => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+    await page.waitForTimeout(2000);
 
-      return Array.from(articleNodes)
-        .slice(0, limit)
-        .map(article => {
-          // Try multiple selectors for links and titles
-          const link = article.querySelector('a[href*="dezeen.com"]') || 
-                      article.querySelector('a:not([href*="#"])');
-          const image = article.querySelector('img');
-          const title = article.querySelector('h2, h3, .title');
+    // Take another screenshot after scrolling
+    await page.screenshot({ path: 'after-scroll.png' });
 
-          if (!link) return null;
+    // Debug: Log the entire page content
+    const content = await page.content();
+    console.log('Page content preview:', content.substring(0, 1000));
 
+    // Try to find any links that look like articles
+    const articles = await page.evaluate(() => {
+      const links = Array.from(document.querySelectorAll('a[href*="dezeen.com"]'));
+      return links
+        .filter(link => {
+          const href = link.href.toLowerCase();
+          // Filter out navigation, category, and other non-article links
+          return !href.includes('/tag/') && 
+                 !href.includes('/category/') && 
+                 !href.includes('/author/') && 
+                 !href.includes('#comments');
+        })
+        .map(link => {
+          const article = link.closest('article') || link.parentElement;
+          const img = article ? article.querySelector('img') : null;
+          
           return {
             url: link.href,
-            title: title ? title.textContent.trim() : link.textContent.trim(),
-            featuredImage: image ? image.src : null
+            title: link.textContent.trim(),
+            featuredImage: img ? img.src : null
           };
         })
-        .filter(Boolean);
-    }, limit);
+        .slice(0, 10); // Limit to 10 articles
+    });
 
-    console.log('Found articles:', articles);
+    console.log('Found articles:', JSON.stringify(articles, null, 2));
 
-    // Process articles...
-    // Rest of the code remains the same...
-
-    return { success: true, count: articles.length };
+    return { success: true, count: articles.length, articles };
   } catch (error) {
     console.error('Error scraping Dezeen:', error);
-    // If there's a screenshot, log its location
-    console.log('Debug screenshot saved as debug-screenshot.png');
     return { success: false, error: error.message };
   } finally {
     await browser.close();
