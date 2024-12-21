@@ -4,17 +4,17 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-  },
-  server: {
-    port: 3000,
-    open: true,
-  },
-  build: {
-    outDir: 'build',
-    sourcemap: true,
   },
 });
