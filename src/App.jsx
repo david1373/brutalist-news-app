@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Articles from '@/components/Articles';
+import { getArticles } from './api/articles';
 
 const App = () => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const trendingTopics = [
     'Brutalism',
@@ -17,19 +18,21 @@ const App = () => {
   ];
 
   useEffect(() => {
-    const fetchArticles = async () => {
+    async function loadArticles() {
       try {
-        const response = await fetch('/api/articles');
-        const data = await response.json();
+        console.log('Fetching articles...');
+        const data = await getArticles();
+        console.log('Articles received:', data);
         setArticles(data);
-      } catch (error) {
-        console.error('Error fetching articles:', error);
+      } catch (err) {
+        console.error('Error loading articles:', err);
+        setError('Failed to load articles');
       } finally {
         setLoading(false);
       }
-    };
+    }
 
-    fetchArticles();
+    loadArticles();
   }, []);
 
   return (
@@ -55,8 +58,40 @@ const App = () => {
             <h2 className="mb-6 text-2xl font-bold">Latest Articles</h2>
             {loading ? (
               <div className="text-center py-8">Loading articles...</div>
+            ) : error ? (
+              <div className="text-center py-8 text-red-500">{error}</div>
+            ) : articles.length === 0 ? (
+              <div className="text-center py-8">No articles found</div>
             ) : (
-              <Articles articles={articles} />
+              <div className="space-y-8">
+                {articles.map((article) => (
+                  <div key={article.id} className="overflow-hidden rounded-lg bg-white shadow">
+                    {article.featured_image && (
+                      <img 
+                        src={article.featured_image} 
+                        alt={article.title} 
+                        className="h-[400px] w-full object-cover"
+                      />
+                    )}
+                    <div className="p-6">
+                      <div className="mb-4">
+                        <div className="inline-block rounded bg-black px-2 py-1 text-xs text-white">
+                          {article.source_name}
+                        </div>
+                      </div>
+                      <h3 className="mb-4 text-xl font-bold">{article.title}</h3>
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm text-zinc-500">
+                          {new Date(article.published_date || article.created_at).toLocaleDateString()}
+                        </p>
+                        {article.author && (
+                          <p className="text-sm text-zinc-500">By {article.author}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
