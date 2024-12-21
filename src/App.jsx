@@ -5,10 +5,10 @@ import { Input } from '@/components/ui/input';
 
 const App = () => {
   const featuredArticle = {
-    title: 'I/Thee places seating within "intentionally eroded" earthen walls for Iowa park',
+    title: 'Trahan Architects creates "weightless" hand-bent steel pavilion in Arkansas',
     category: 'Architecture',
-    content: 'Arizona architecture studio I/Thee has created a public installation in an Iowa park composed of furniture affixed into two rammed earth walls that were made to look eroded by applying water pressure. The Dining Room is the first of six pavilions planned to encircle Lake Petocka in Bondurant, Iowa for the ARTocka Trail Loop.',
-    date: 'Thu, 19 Dec 2024 20:00:40 +0000',
+    content: 'New Orleans architecture studio Trahan Architects has completed a performance pavilion made of weathering steel that is anchored by two ground points, making the structure appear lighter than it is. The Performance Pavilion is located in the centre of a large lawn at Luther George Park in Springdale, Arkansas, designed in...',
+    date: 'Fri. 20 Dec 2024 20:00:33 +0000',
     imageUrl: '/api/placeholder/800/400'
   };
 
@@ -26,7 +26,7 @@ const App = () => {
       <header className="border-b">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <h1 className="text-2xl font-bold">Brutalist</h1>
-          <nav className="space-x-6">
+          <nav className="space-x-6 text-zinc-600">
             <a href="#" className="text-sm">Home</a>
             <a href="#" className="text-sm">Categories</a>
             <a href="#" className="text-sm">Shop</a>
@@ -54,8 +54,8 @@ const App = () => {
                 <h3 className="mt-2 text-xl font-bold">{featuredArticle.title}</h3>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">{featuredArticle.content}</p>
-                <p className="mt-4 text-sm text-gray-500">{featuredArticle.date}</p>
+                <p className="text-zinc-600">{featuredArticle.content}</p>
+                <p className="mt-4 text-sm text-zinc-500">{featuredArticle.date}</p>
               </CardContent>
             </Card>
           </div>
@@ -65,9 +65,10 @@ const App = () => {
             <h2 className="mb-6 text-2xl font-bold">Trending Topics</h2>
             <div className="space-y-4">
               {trendingTopics.map((topic, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <p className="font-medium">{topic}</p>
+                <Card key={index} className="relative">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />
+                  <CardContent className="flex min-h-[60px] items-center p-4 pl-6">
+                    <p className="text-zinc-600">{topic}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -76,17 +77,17 @@ const App = () => {
             {/* Newsletter */}
             <Card className="mt-8">
               <CardContent className="p-6">
-                <h3 className="mb-2 text-lg font-bold">Subscribe to Our Newsletter</h3>
-                <p className="mb-4 text-sm text-gray-600">
+                <h3 className="text-lg font-bold mb-2">Subscribe to Our Newsletter</h3>
+                <p className="mb-4 text-zinc-600">
                   Stay updated with the latest in architecture and design
                 </p>
                 <div className="space-y-4">
                   <Input 
                     type="email" 
                     placeholder="Enter your email" 
-                    className="w-full"
+                    className="w-full text-zinc-600"
                   />
-                  <Button className="w-full">Subscribe</Button>
+                  <Button className="w-full bg-black hover:bg-black/90">Subscribe</Button>
                 </div>
               </CardContent>
             </Card>
