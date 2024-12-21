@@ -11,23 +11,36 @@ const config = {
   connection: {
     host: process.env.DB_HOST || 'localhost',
     port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'brutalist_dev',
-    user: process.env.DB_USER || process.platform === 'darwin' ? process.env.USER : 'postgres',
-    password: process.env.DB_PASSWORD || ''
+    database: 'brutalist_dev',
+    user: process.platform === 'darwin' ? process.env.USER : 'postgres',
   },
   migrations: {
     directory: join(__dirname, '../database/migrations')
+  },
+  pool: {
+    min: 2,
+    max: 10
   }
 };
 
 async function runMigrations() {
   const db = knex(config);
+  
   try {
+    // Test connection first
+    console.log('Testing database connection...');
+    await db.raw('SELECT 1');
+    console.log('Database connection successful!');
+
     console.log('Running migrations...');
-    await db.migrate.latest();
+    const [batchNo, log] = await db.migrate.latest();
+    console.log(`Batch ${batchNo} completed:`, log);
     console.log('Migrations completed successfully!');
   } catch (error) {
-    console.error('Migration failed:', error);
+    console.error('Error details:', error);
+    if (error.code === '3D000') {
+      console.error('Database connection failed - please check PostgreSQL is running and database exists');
+    }
     process.exit(1);
   } finally {
     await db.destroy();
