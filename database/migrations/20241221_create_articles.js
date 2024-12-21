@@ -1,3 +1,5 @@
+// database/migrations/20241221_create_articles.js
+
 export const up = async function(knex) {
   return knex.schema.createTable('articles', table => {
     table.increments('id').primary();
