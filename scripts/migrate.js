@@ -17,20 +17,31 @@ const config = {
   migrations: {
     directory: join(__dirname, '../database/migrations')
   },
-  pool: {
-    min: 2,
-    max: 10
-  }
+  debug: true
 };
 
 async function runMigrations() {
   const db = knex(config);
   
   try {
-    // Test connection first
     console.log('Testing database connection...');
     await db.raw('SELECT 1');
     console.log('Database connection successful!');
+
+    // Check if migrations table exists and drop it
+    const hasTable = await db.schema.hasTable('knex_migrations');
+    if (hasTable) {
+      console.log('Dropping existing migrations table...');
+      await db.schema.dropTable('knex_migrations');
+      await db.schema.dropTable('knex_migrations_lock');
+    }
+
+    // Check if articles table exists and drop it
+    const hasArticles = await db.schema.hasTable('articles');
+    if (hasArticles) {
+      console.log('Dropping existing articles table...');
+      await db.schema.dropTable('articles');
+    }
 
     console.log('Running migrations...');
     const [batchNo, log] = await db.migrate.latest();
@@ -38,9 +49,6 @@ async function runMigrations() {
     console.log('Migrations completed successfully!');
   } catch (error) {
     console.error('Error details:', error);
-    if (error.code === '3D000') {
-      console.error('Database connection failed - please check PostgreSQL is running and database exists');
-    }
     process.exit(1);
   } finally {
     await db.destroy();
