@@ -41,56 +41,54 @@ const App = () => {
           {/* Featured Articles */}
           <div className="lg:col-span-2">
             <h2 className="mb-6 text-2xl font-bold">Featured Articles</h2>
-            <Card className="overflow-hidden">
+            <div className="overflow-hidden rounded-lg">
               <img 
                 src={featuredArticle.imageUrl} 
                 alt="Featured article" 
                 className="h-[400px] w-full object-cover"
               />
-              <CardHeader>
-                <div className="rounded bg-black px-2 py-1 text-xs text-white w-fit">
-                  {featuredArticle.category}
+              <div className="bg-white p-6">
+                <div className="mb-4">
+                  <div className="inline-block rounded bg-black px-2 py-1 text-xs text-white">
+                    {featuredArticle.category}
+                  </div>
                 </div>
-                <h3 className="mt-2 text-xl font-bold">{featuredArticle.title}</h3>
-              </CardHeader>
-              <CardContent>
-                <p className="text-zinc-600">{featuredArticle.content}</p>
-                <p className="mt-4 text-sm text-zinc-500">{featuredArticle.date}</p>
-              </CardContent>
-            </Card>
+                <h3 className="mb-4 text-xl font-bold">{featuredArticle.title}</h3>
+                <p className="mb-4 text-zinc-600">{featuredArticle.content}</p>
+                <p className="text-sm text-zinc-500">{featuredArticle.date}</p>
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div>
             <h2 className="mb-6 text-2xl font-bold">Trending Topics</h2>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {trendingTopics.map((topic, index) => (
-                <Card key={index} className="relative">
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500" />
-                  <CardContent className="flex min-h-[60px] items-center p-4 pl-6">
+                <div key={index} className="relative bg-white shadow-sm rounded-lg">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-l-lg" />
+                  <div className="flex min-h-[52px] items-center px-6">
                     <p className="text-zinc-600">{topic}</p>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
 
             {/* Newsletter */}
-            <Card className="mt-8">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-bold mb-2">Subscribe to Our Newsletter</h3>
-                <p className="mb-4 text-zinc-600">
-                  Stay updated with the latest in architecture and design
-                </p>
-                <div className="space-y-4">
-                  <Input 
-                    type="email" 
-                    placeholder="Enter your email" 
-                    className="w-full text-zinc-600"
-                  />
-                  <Button className="w-full bg-black hover:bg-black/90">Subscribe</Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="mt-8 rounded-lg bg-white p-8 shadow-sm">
+              <h3 className="text-xl font-bold mb-2">Subscribe to Our Newsletter</h3>
+              <p className="mb-6 text-sm text-zinc-600">
+                Stay updated with the latest in architecture and design
+              </p>
+              <div className="space-y-4">
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  className="w-full rounded-lg border-zinc-200 text-sm text-zinc-600"
+                />
+                <Button className="w-full bg-black text-sm hover:bg-black/90">Subscribe</Button>
+              </div>
+            </div>
           </div>
         </div>
       </main>
