@@ -1,12 +1,41 @@
 import React from 'react';
-import { Card, CardHeader, CardContent, CardDescription, CardTitle } from '@/components/ui/Card';
 
-export const CustomCard = ({ children }) => {
-  return <div className="rounded-lg bg-white p-4 shadow">{children}</div>;
+export const Card = ({ className, children, ...props }) => {
+  return (
+    <div className={`rounded-lg bg-white p-4 shadow ${className}`} {...props}>
+      {children}
+    </div>
+  );
 };
 
-export const CustomCardHeader = ({ children }) => {
-  return <div className="mb-4 border-b pb-2">{children}</div>;
+export const CardHeader = ({ className, children, ...props }) => {
+  return (
+    <div className={`mb-4 border-b pb-2 ${className}`} {...props}>
+      {children}
+    </div>
+  );
 };
 
-// Add similar components for CardContent, CardDescription, CardTitle
+export const CardContent = ({ className, children, ...props }) => {
+  return (
+    <div className={`${className}`} {...props}>
+      {children}
+    </div>
+  );
+};
+
+export const CardDescription = ({ className, children, ...props }) => {
+  return (
+    <p className={`text-sm text-gray-600 ${className}`} {...props}>
+      {children}
+    </p>
+  );
+};
+
+export const CardTitle = ({ className, children, ...props }) => {
+  return (
+    <h3 className={`text-lg font-semibold ${className}`} {...props}>
+      {children}
+    </h3>
+  );
+};
