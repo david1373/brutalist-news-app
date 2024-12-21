@@ -1,13 +1,6 @@
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+require('dotenv').config({ path: '../.env' });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-dotenv.config({ path: new URL('../.env', import.meta.url).pathname });
-
-export default {
+module.exports = {
   development: {
     client: 'pg',
     connection: {
