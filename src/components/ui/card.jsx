@@ -1,41 +1,51 @@
 import React from 'react';
 
-export const Card = ({ className = '', children, ...props }) => {
-  return (
-    <div className={`rounded-lg bg-white p-4 shadow ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
+export const Card = React.forwardRef(({ className = '', ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`rounded-lg border bg-card text-card-foreground shadow-sm ${className}`}
+    {...props}
+  />
+));
+Card.displayName = 'Card';
 
-export const CardHeader = ({ className = '', children, ...props }) => {
-  return (
-    <div className={`mb-4 border-b pb-2 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
+export const CardHeader = React.forwardRef(({ className = '', ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex flex-col space-y-1.5 p-6 ${className}`}
+    {...props}
+  />
+));
+CardHeader.displayName = 'CardHeader';
 
-export const CardContent = ({ className = '', children, ...props }) => {
-  return (
-    <div className={`${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
+export const CardContent = React.forwardRef(({ className = '', ...props }, ref) => (
+  <div ref={ref} className={`p-6 pt-0 ${className}`} {...props} />
+));
+CardContent.displayName = 'CardContent';
 
-export const CardDescription = ({ className = '', children, ...props }) => {
-  return (
-    <p className={`text-sm text-gray-600 ${className}`} {...props}>
-      {children}
-    </p>
-  );
-};
+export const CardFooter = React.forwardRef(({ className = '', ...props }, ref) => (
+  <div
+    ref={ref}
+    className={`flex items-center p-6 pt-0 ${className}`}
+    {...props}
+  />
+));
+CardFooter.displayName = 'CardFooter';
 
-export const CardTitle = ({ className = '', children, ...props }) => {
-  return (
-    <h3 className={`text-lg font-semibold ${className}`} {...props}>
-      {children}
-    </h3>
-  );
-};
+export const CardTitle = React.forwardRef(({ className = '', ...props }, ref) => (
+  <h3
+    ref={ref}
+    className={`text-2xl font-semibold leading-none tracking-tight ${className}`}
+    {...props}
+  />
+));
+CardTitle.displayName = 'CardTitle';
+
+export const CardDescription = React.forwardRef(({ className = '', ...props }, ref) => (
+  <p
+    ref={ref}
+    className={`text-sm text-muted-foreground ${className}`}
+    {...props}
+  />
+));
+CardDescription.displayName = 'CardDescription';
