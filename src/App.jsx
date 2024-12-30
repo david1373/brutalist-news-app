@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import ArticleDetail from './pages/api/ArticleDetail';
-import ArticleList from './pages/api/ArticleList';
+import ArticleDetail from './pages/api/ArticleDetail.jsx';
+import ArticleList from './pages/api/ArticleList.jsx';
 import { Button } from '@/components/ui/button';
 
 const App = () => {
