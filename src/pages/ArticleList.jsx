@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getArticles } from '@/api/articles';
+import axios from 'axios';
 
 const ArticleList = () => {
   const [articles, setArticles] = useState([]);
@@ -21,13 +21,14 @@ const ArticleList = () => {
   useEffect(() => {
     async function loadArticles() {
       try {
-        console.log('Fetching articles...');
-        const data = await getArticles();
-        console.log('Articles received:', data);
-        setArticles(data);
+        console.log('Starting to fetch articles...');
+        // Use explicit URL with port
+        const response = await axios.get('http://localhost:3001/api/articles');
+        console.log('API Response:', response.data);
+        setArticles(response.data);
       } catch (err) {
         console.error('Error loading articles:', err);
-        setError('Failed to load articles');
+        setError('Failed to load articles: ' + err.message);
       } finally {
         setLoading(false);
       }
