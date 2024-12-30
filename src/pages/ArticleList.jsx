@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { getArticles } from '../api/articles';
+import { getArticles } from '@/api/articles';
 
 const ArticleList = () => {
   const [articles, setArticles] = useState([]);
@@ -22,8 +22,7 @@ const ArticleList = () => {
     async function loadArticles() {
       try {
         console.log('Fetching articles...');
-        const response = await fetch('/api/articles');
-        const data = await response.json();
+        const data = await getArticles();
         console.log('Articles received:', data);
         setArticles(data);
       } catch (err) {
