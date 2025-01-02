@@ -3,11 +3,11 @@ import express from 'express';
 import knex from 'knex';
 import config from './database/knexfile.js';
 import { scrapeArticle } from './services/scrapers/dezeen.js';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
-const openai = new OpenAIApi(new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
-}));
+});
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -20,17 +20,17 @@ app.use((req, res, next) => {
 
 async function transformContent(content) {
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [{
         role: "system",
         content: "You are Jack Kerouac. Rewrite this architecture article in your distinctive stream-of-consciousness style while maintaining accuracy of architectural terminology and concepts."
       }, {
         role: "user",
-        content: content
+        content
       }]
     });
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   } catch (error) {
     console.error('Error transforming content:', error);
     return null;
