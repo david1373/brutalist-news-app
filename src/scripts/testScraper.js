@@ -1,5 +1,4 @@
-node src/scripts/testScraper.js
-const puppeteer = await import('puppeteer');
+import puppeteer from 'puppeteer';
 
 async function test() {
   const browser = await puppeteer.launch();
