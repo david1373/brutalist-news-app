@@ -54,7 +54,7 @@ const ArticleDetail = () => {
             </div>
             
             <div className="prose prose-lg max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: article.content }} />
+              <div dangerouslySetInnerHTML={{ __html: article.original_content || 'Pending content fetch' }} />
             </div>
             
             {article.transformed_content && (
