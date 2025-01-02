@@ -51,17 +51,30 @@ const ArticleDetail = () => {
             <div className="flex items-center space-x-4 mb-6 text-sm text-zinc-500">
               {article.author && <span>By {article.author}</span>}
               <span>{new Date(article.published_date || article.created_at).toLocaleDateString()}</span>
+            </div>
+            
+            <div className="prose prose-lg max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: article.original_content }} />
+            </div>
+            
+            {article.transformed_content && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h2 className="text-2xl font-bold mb-4">Kerouac's Take</h2>
+                <div className="prose prose-lg max-w-none italic">
+                  <div dangerouslySetInnerHTML={{ __html: article.transformed_content }} />
+                </div>
+              </div>
+            )}
+            
+            <div className="mt-8 pt-8 border-t border-gray-200">
               <a 
                 href={article.source_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-black hover:underline"
+                className="text-sm text-black hover:underline"
               >
-                Original Source
+                Read original article at {article.source_name}
               </a>
-            </div>
-            <div className="prose max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: article.processed_content || article.content }} />
             </div>
           </div>
         </Card>
