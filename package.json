@@ -2,5 +2,8 @@
   "type": "module",
   "scripts": {
     "test:scraper": "node src/scripts/testScraper.js"
+  },
+  "dependencies": {
+    "puppeteer": "^23.11.1"
   }
 }
