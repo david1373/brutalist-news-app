@@ -1,56 +1,31 @@
 import puppeteer from 'puppeteer';
-import knex from 'knex';
-import config from '../../database/knexfile.js';
 
 async function scrapeArticle(url) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox']
+  });
   const page = await browser.newPage();
   
   try {
+    console.log('Scraping URL:', url);
     await page.goto(url, { waitUntil: 'networkidle0' });
     
     // Get article content
     const content = await page.evaluate(() => {
-      const articleBody = document.querySelector('.article__body');
-      return articleBody ? articleBody.innerHTML : null;
+      const paragraphs = Array.from(document.querySelectorAll('.article__copy p'));
+      return paragraphs.map(p => p.innerText).join('\n\n');
     });
 
-    // Get metadata
-    const title = await page.$eval('h1', el => el.textContent);
-    const author = await page.$eval('.article__author-name', el => el.textContent.trim()).catch(() => null);
-    const featuredImage = await page.$eval('.article__hero-image img', el => el.src).catch(() => null);
+    console.log('Content scraped:', content ? 'Yes' : 'No');
+    return content;
 
-    await browser.close();
-    
-    return {
-      title,
-      original_content: content,
-      author,
-      featured_image: featuredImage,
-      source_name: 'Dezeen',
-      source_url: url
-    };
   } catch (error) {
-    console.error('Error scraping article:', error);
-    await browser.close();
+    console.error('Scraping error:', error);
     throw error;
-  }
-}
-
-async function updateArticle(id, content) {
-  const db = knex(config);
-  try {
-    await db('articles')
-      .where({ id })
-      .update({
-        original_content: content.original_content,
-        author: content.author,
-        featured_image: content.featured_image,
-        updated_at: new Date()
-      });
   } finally {
-    await db.destroy();
+    await browser.close();
   }
 }
 
-export { scrapeArticle, updateArticle };
+export { scrapeArticle };
