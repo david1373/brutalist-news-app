@@ -10,47 +10,41 @@ async function scrapeArticle(url) {
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     
-    console.log('Scraping:', url);
     await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
     
-    const content = await page.evaluate(() => {
-      // List of possible content selectors
-      const selectors = [
-        '.article__content',
-        '.dezeen-content',
-        '.article__copy',
-        '.article-body',
-        'article',
-        '.post-content'
-      ];
+    const { content, images } = await page.evaluate(() => {
+      const article = document.querySelector('article');
+      if (!article) return { content: null, images: [] };
       
-      // Try each selector
-      for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element) {
-          console.log('Found content with selector:', selector);
-          const paragraphs = element.querySelectorAll('p');
-          const text = Array.from(paragraphs)
-            .map(p => p.textContent.trim())
-            .filter(text => text.length > 0)
-            .join('\n\n');
-          
-          if (text.length > 0) return text;
-        }
-      }
-      
-      // If no selector works, try getting all paragraphs
-      const allParagraphs = document.querySelectorAll('p');
-      return Array.from(allParagraphs)
-        .map(p => p.textContent.trim())
+      // Get all images
+      const imageElements = article.querySelectorAll('img');
+      const images = Array.from(imageElements)
+        .map(img => ({
+          src: img.src,
+          alt: img.alt || '',
+          caption: img.closest('figure')?.querySelector('figcaption')?.textContent || ''
+        }))
+        .filter(img => img.src && !img.src.includes('avatar') && !img.src.includes('icon'));
+
+      // Get content with proper formatting
+      const contentElements = Array.from(article.children);
+      const content = contentElements
+        .map(el => {
+          if (el.tagName === 'P') return `<p>${el.innerHTML}</p>`;
+          if (el.tagName === 'H2') return `<h2>${el.innerHTML}</h2>`;
+          if (el.tagName === 'H3') return `<h3>${el.innerHTML}</h3>`;
+          if (el.tagName === 'BLOCKQUOTE') return `<blockquote>${el.innerHTML}</blockquote>`;
+          return '';
+        })
         .filter(text => text.length > 0)
         .join('\n\n');
+
+      return { content, images };
     });
 
-    console.log('Content length:', content?.length || 0);
     if (!content) throw new Error('No content found');
     
-    return content;
+    return { content, images };
   } catch (error) {
     console.error('Scraping error:', error.message);
     throw error;
