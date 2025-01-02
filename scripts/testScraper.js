@@ -8,25 +8,28 @@ async function test() {
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1920, height: 1080 });
-    
-    // Navigate and wait for content
     await page.goto('https://leibal.com/architecture/house-in-yoga/', {
       waitUntil: 'networkidle0'
     });
-    await page.waitForSelector('img', {timeout: 5000});
     
-    // Debug DOM structure
     const article = await page.evaluate(() => {
-      console.log('Available images:', document.querySelectorAll('img').length);
-      
+      // Filter and deduplicate images
+      const seenUrls = new Set();
       const images = Array.from(document.querySelectorAll('img'))
         .filter(img => {
-          console.log('Image:', {
-            src: img.src,
-            width: img.width,
-            height: img.height,
-            className: img.className
-          });
+          // Filter out logos, sponsors, and small images
+          if (img.src.includes('sponsors') || 
+              img.src.includes('logo') || 
+              img.src.includes('hover') ||
+              img.width < 800 || 
+              img.height < 400) {
+            return false;
+          }
+          
+          // Deduplicate
+          if (seenUrls.has(img.src)) return false;
+          seenUrls.add(img.src);
+          
           return true;
         })
         .map(img => ({
@@ -35,8 +38,8 @@ async function test() {
           dimensions: { width: img.width, height: img.height }
         }));
 
-      const content = document.querySelector('.post-content')?.textContent;
-      const title = document.querySelector('.post-title')?.textContent;
+      const content = document.querySelector('.post-content')?.textContent?.trim();
+      const title = document.querySelector('.post-title')?.textContent?.trim();
 
       return { title, content, images };
     });
