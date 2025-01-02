@@ -1,16 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllArticles } from '@/services/articleService';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
   try {
-    const articles = await getAllArticles();
-    res.status(200).json(articles);
+    const mockArticles = [{
+      title: 'Test Article',
+      content: 'Test content',
+      images: [{ url: 'https://leibal.com/test.jpg', caption: 'Test' }],
+      source: 'Test',
+      url: 'https://test.com',
+      date: new Date().toISOString()
+    }];
+    
+    res.status(200).json(mockArticles);
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ message: 'Failed to fetch articles' });
+    res.status(500).json({ error: 'Failed to fetch articles' });
   }
 }
