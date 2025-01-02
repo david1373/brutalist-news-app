@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   reactStrictMode: true,
   images: {
-    domains: ['leibal.com', 'dezeen.com', 'static.dezeen.com'],
+    domains: ['leibal.com', 'static.dezeen.com'],
   },
+  webpack: (config) => {
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    return config;
+  }
 }
-
-module.exports = nextConfig
