@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import ArticleDetail from '@/components/ArticleDetail';
+
 interface Article {
   title: string;
   content: string;
@@ -11,18 +12,24 @@ interface Article {
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
+
   useEffect(() => {
     fetch('/api/articles')
       .then(res => res.json())
-      .then(setArticles)
+      .then(data => {
+        console.log('Fetched data:', data);
+        setArticles(data.articles || []);
+      })
       .catch(console.error);
   }, []);
+
+  console.log('Current articles:', articles);
 
   return (
     <div className="container mx-auto px-4">
       <h1 className="text-4xl font-bold my-8">Brutalist Architecture News</h1>
       <div className="space-y-8">
-        {articles?.map(article => (
+        {Array.isArray(articles) && articles.map(article => (
           <ArticleDetail key={article.url} article={article} />
         ))}
       </div>
