@@ -1,13 +1,14 @@
+import 'dotenv/config';
 import express from 'express';
 import knex from 'knex';
 import config from './database/knexfile.js';
 import { rewriteArticle } from './src/services/gpt.js';
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Origin', process.env.VITE_API_URL || 'http://localhost:5173');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
 });
