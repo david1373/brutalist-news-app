@@ -54,7 +54,7 @@ const ArticleDetail = () => {
             </div>
             
             <div className="prose prose-lg max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: article.original_content }} />
+              <div dangerouslySetInnerHTML={{ __html: article.content }} />
             </div>
             
             {article.transformed_content && (
@@ -67,13 +67,14 @@ const ArticleDetail = () => {
             )}
             
             <div className="mt-8 pt-8 border-t border-gray-200">
+              <p className="text-sm text-zinc-500 mb-4">Content from {article.source_name}</p>
               <a 
                 href={article.source_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-sm text-black hover:underline"
               >
-                Read original article at {article.source_name}
+                Read original article
               </a>
             </div>
           </div>
