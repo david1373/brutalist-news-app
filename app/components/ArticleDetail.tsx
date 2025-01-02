@@ -1,49 +1,47 @@
 import React from 'react';
 import Image from 'next/image';
 
-interface ArticleDetailProps {
-  article: {
-    title: string;
-    content: string;
-    images: Array<{
-      url: string;
-      caption: string;
-      credit: string;
-    }>;
-  };
-}
-
-const ArticleDetail = ({ article }: ArticleDetailProps) => {
-  // Split content into paragraphs and intersperse images
-  const contentParagraphs = article.content.split('\n\n');
-  const imagesPerSegment = Math.ceil(article.images.length / contentParagraphs.length);
+const ArticleDetail = ({ article }) => {
+  const paragraphs = article.content.split('\n\n').filter(p => p.trim());
+  const imageCount = article.images.length;
+  const spacing = Math.max(2, Math.floor(paragraphs.length / (imageCount + 1)));
   
+  const content = [];
+  let imageIndex = 0;
+  
+  paragraphs.forEach((paragraph, index) => {
+    content.push(
+      <p key={`p-${index}`} className="mb-6 text-lg">
+        {paragraph}
+      </p>
+    );
+
+    if (imageIndex < imageCount && index % spacing === spacing - 1) {
+      const image = article.images[imageIndex];
+      content.push(
+        <figure key={`img-${imageIndex}`} className="my-12">
+          <div className="relative w-full h-[600px]">
+            <Image
+              src={image.url}
+              alt={image.caption}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw"
+            />
+          </div>
+          <figcaption className="mt-3 text-sm text-gray-600">
+            {image.caption} {image.credit && `| Credit: ${image.credit}`}
+          </figcaption>
+        </figure>
+      );
+      imageIndex++;
+    }
+  });
+
   return (
-    <article className="max-w-4xl mx-auto p-6">
+    <article className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8">{article.title}</h1>
-      {contentParagraphs.map((paragraph, index) => (
-        <div key={index} className="mb-8">
-          <p className="mb-4">{paragraph}</p>
-          {article.images.slice(
-            index * imagesPerSegment,
-            (index + 1) * imagesPerSegment
-          ).map((image, imgIndex) => (
-            <figure key={imgIndex} className="my-6">
-              <div className="relative h-96 w-full">
-                <Image
-                  src={image.url}
-                  alt={image.caption}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <figcaption className="mt-2 text-sm text-gray-600">
-                {image.caption} | Credit: {image.credit}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      ))}
+      {content}
     </article>
   );
 };
