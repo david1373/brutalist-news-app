@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import knex from 'knex';
 import config from './database/knexfile.js';
+import { scrapeArticle, updateArticle } from './services/scrapers/dezeen.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -25,8 +26,18 @@ app.get('/api/articles/:id', async (req, res) => {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    // Log all article fields
-    console.log('Full article data:', JSON.stringify(article, null, 2));
+    if (!article.original_content && article.source_url) {
+      console.log('Scraping content for article:', article.id);
+      try {
+        const scrapedContent = await scrapeArticle(article.source_url);
+        await updateArticle(article.id, scrapedContent);
+        article.original_content = scrapedContent.original_content;
+      } catch (error) {
+        console.error('Error scraping article:', error);
+      }
+    }
+
+    console.log('Sending article data:', article.id);
     res.json(article);
   } catch (error) {
     console.error('Database error:', error);
