@@ -25,9 +25,9 @@ const ArticleDetail = () => {
     fetchArticle();
   }, [id]);
 
-  if (loading) return <div className="text-center py-8">Loading article...</div>;
-  if (error) return <div className="text-center py-8 text-red-500">{error}</div>;
-  if (!article) return <div className="text-center py-8">Article not found</div>;
+  if (loading) return <div className="py-8 text-center">Loading article...</div>;
+  if (error) return <div className="py-8 text-center text-red-500">{error}</div>;
+  if (!article) return <div className="py-8 text-center">Article not found</div>;
 
   return (
     <div className="min-h-screen bg-white">
@@ -37,7 +37,7 @@ const ArticleDetail = () => {
             <img
               src={article.featured_image}
               alt={article.title}
-              className="w-full h-96 object-cover"
+              className="h-96 w-full object-cover"
             />
           )}
           <div className="p-6">
@@ -46,13 +46,15 @@ const ArticleDetail = () => {
                 {article.source_name}
               </span>
             </div>
-            <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
-            <div className="flex items-center space-x-4 mb-6 text-sm text-zinc-500">
+            <h1 className="mb-4 text-3xl font-bold">{article.title}</h1>
+            <div className="mb-6 flex items-center space-x-4 text-sm text-zinc-500">
               {article.author && <span>By {article.author}</span>}
-              <span>{new Date(article.published_date || article.created_at).toLocaleDateString()}</span>
-              <a 
-                href={article.source_url} 
-                target="_blank" 
+              <span>
+                {new Date(article.published_date || article.created_at).toLocaleDateString()}
+              </span>
+              <a
+                href={article.source_url}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-black hover:underline"
               >
