@@ -10,43 +10,42 @@ async function scrapeArticle(url) {
     const page = await browser.newPage();
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
     
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+    console.log('Starting scrape of:', url);
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
     
-    const { content, images } = await page.evaluate(() => {
-      const article = document.querySelector('article');
-      if (!article) return { content: null, images: [] };
-      
-      // Get all images
-      const imageElements = article.querySelectorAll('img');
-      const images = Array.from(imageElements)
-        .map(img => ({
-          src: img.src,
-          alt: img.alt || '',
-          caption: img.closest('figure')?.querySelector('figcaption')?.textContent || ''
-        }))
-        .filter(img => img.src && !img.src.includes('avatar') && !img.src.includes('icon'));
+    const content = await page.evaluate(() => {
+      const selectors = [
+        '.dezeen-content article',
+        '.article-body',
+        '.article__content',
+        '.article__copy',
+        'article'
+      ];
 
-      // Get content with proper formatting
-      const contentElements = Array.from(article.children);
-      const content = contentElements
-        .map(el => {
-          if (el.tagName === 'P') return `<p>${el.innerHTML}</p>`;
-          if (el.tagName === 'H2') return `<h2>${el.innerHTML}</h2>`;
-          if (el.tagName === 'H3') return `<h3>${el.innerHTML}</h3>`;
-          if (el.tagName === 'BLOCKQUOTE') return `<blockquote>${el.innerHTML}</blockquote>`;
-          return '';
-        })
-        .filter(text => text.length > 0)
-        .join('\n\n');
+      let mainContent;
+      for (const selector of selectors) {
+        mainContent = document.querySelector(selector);
+        if (mainContent) break;
+      }
 
-      return { content, images };
+      if (!mainContent) return null;
+
+      const paragraphs = mainContent.querySelectorAll('p, h2, h3, blockquote');
+      return Array.from(paragraphs)
+        .map(el => el.outerHTML)
+        .join('\n');
     });
 
-    if (!content) throw new Error('No content found');
-    
-    return { content, images };
+    if (!content) {
+      console.error('No content found using selectors');
+      return { content: 'Content not available', images: [] };
+    }
+
+    console.log('Content length:', content.length);
+    return { content, images: [] };
+
   } catch (error) {
-    console.error('Scraping error:', error.message);
+    console.error('Scraping error:', error);
     throw error;
   } finally {
     await browser.close();
