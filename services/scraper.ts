@@ -1,25 +1,24 @@
-import { scrapeLeibal } from './leibalScraper';
-import { scrapeDezeen } from './dezeenScraper';
+import { scrapeLeibalArticle, getLeibalFeed } from './scrapers/leibal';
+import { scrapeDezeenArticle } from './scrapers/dezeen';
+import { Article } from '../types';
 
-export async function scrapeArticle(url: string) {
+export async function scrapeArticle(url: string): Promise<Article> {
   if (url.includes('leibal.com')) {
-    return scrapeLeibal(url);
+    return scrapeLeibalArticle(url);
   } else if (url.includes('dezeen.com')) {
-    return scrapeDezeen(url);
+    return scrapeDezeenArticle(url);
   }
   throw new Error('Unsupported website');
 }
 
-// Add Leibal to the source list
-export const SOURCES = [
-  {
-    name: 'Dezeen',
-    baseUrl: 'https://www.dezeen.com',
-    feedUrl: 'https://www.dezeen.com/architecture/feed/'
-  },
-  {
-    name: 'Leibal',
-    baseUrl: 'https://leibal.com',
-    feedUrl: 'https://leibal.com/feed/'
-  }
-];
+export async function getFreshArticles(): Promise<Article[]> {
+  const leibalUrls = await getLeibalFeed();
+  const articles = await Promise.all(
+    leibalUrls.map(url => scrapeArticle(url).catch(err => {
+      console.error(`Failed to scrape ${url}:`, err);
+      return null;
+    }))
+  );
+  
+  return articles.filter((article): article is Article => article !== null);
+}
