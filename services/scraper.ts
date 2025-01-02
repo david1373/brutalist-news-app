@@ -1,36 +1,25 @@
-import puppeteer from 'puppeteer';
+import { scrapeLeibal } from './leibalScraper';
+import { scrapeDezeen } from './dezeenScraper';
 
 export async function scrapeArticle(url: string) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.goto(url);
-
-  const images = await page.evaluate(() => {
-    const articleImages = Array.from(document.querySelectorAll('img'));
-    return articleImages
-      .filter(img => {
-        // Filter out small images, ads, and icons
-        const rect = img.getBoundingClientRect();
-        const minSize = 400; // Minimum size in pixels
-        return rect.width >= minSize && rect.height >= minSize &&
-               !img.src.includes('logo') &&
-               !img.src.includes('ad') &&
-               !img.src.includes('icon');
-      })
-      .map(img => ({
-        url: img.src,
-        caption: img.alt || '',
-        credit: img.getAttribute('data-credit') || '',
-        width: img.width,
-        height: img.height
-      }));
-  });
-
-  const content = await page.evaluate(() => {
-    const articleBody = document.querySelector('.article-body');
-    return articleBody ? articleBody.textContent : '';
-  });
-
-  await browser.close();
-  return { content, images };
+  if (url.includes('leibal.com')) {
+    return scrapeLeibal(url);
+  } else if (url.includes('dezeen.com')) {
+    return scrapeDezeen(url);
+  }
+  throw new Error('Unsupported website');
 }
+
+// Add Leibal to the source list
+export const SOURCES = [
+  {
+    name: 'Dezeen',
+    baseUrl: 'https://www.dezeen.com',
+    feedUrl: 'https://www.dezeen.com/architecture/feed/'
+  },
+  {
+    name: 'Leibal',
+    baseUrl: 'https://leibal.com',
+    feedUrl: 'https://leibal.com/feed/'
+  }
+];
