@@ -1,34 +1,36 @@
 import puppeteer from 'puppeteer';
-import { Article } from '../../types';
+import { Article } from '@/types';
 
 export async function scrapeLeibalArticle(url: string): Promise<Article> {
   const browser = await puppeteer.launch();
   try {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle0' });
-
+    
     const article = await page.evaluate(() => {
-      const title = document.querySelector('h1.entry-title')?.textContent?.trim() || '';
-      const content = Array.from(document.querySelectorAll('.entry-content p'))
-        .map(p => p.textContent?.trim())
-        .filter(Boolean)
-        .join('\n\n');
-      
-      const images = Array.from(document.querySelectorAll('.entry-content img'))
+      const images = Array.from(document.querySelectorAll('img'))
         .filter(img => {
           const rect = img.getBoundingClientRect();
           return rect.width >= 800 && rect.height >= 400;
         })
         .map(img => ({
           url: img.src,
-          caption: img.alt || '',
-          credit: img.getAttribute('data-credit') || ''
+          caption: img.alt || ''
         }));
 
-      return { title, content, images };
+      return {
+        title: document.querySelector('.post-title')?.textContent?.trim() || '',
+        content: document.querySelector('.post-content')?.textContent?.trim() || '',
+        images,
+        date: document.querySelector('.post-date')?.textContent || new Date().toISOString()
+      };
     });
-
-    return article;
+    
+    return {
+      ...article,
+      source: 'Leibal',
+      url
+    };
   } finally {
     await browser.close();
   }
