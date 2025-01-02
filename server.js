@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import knex from 'knex';
 import config from './database/knexfile.js';
-import { scrapeArticle, updateArticle } from './services/scrapers/dezeen.js';
+import { scrapeArticle } from './services/scrapers/dezeen.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -17,7 +17,6 @@ app.get('/api/articles/:id', async (req, res) => {
   const db = knex(config);
   
   try {
-    console.log('Fetching article with ID:', req.params.id);
     const article = await db('articles')
       .where({ id: req.params.id })
       .first();
@@ -26,18 +25,24 @@ app.get('/api/articles/:id', async (req, res) => {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    if (!article.original_content && article.source_url) {
-      console.log('Scraping content for article:', article.id);
+    if (article.original_content === 'Pending content fetch' && article.source_url) {
+      console.log('Fetching content for:', article.source_url);
       try {
-        const scrapedContent = await scrapeArticle(article.source_url);
-        await updateArticle(article.id, scrapedContent);
-        article.original_content = scrapedContent.original_content;
+        const content = await scrapeArticle(article.source_url);
+        if (content) {
+          await db('articles')
+            .where({ id: article.id })
+            .update({
+              original_content: content,
+              updated_at: new Date()
+            });
+          article.original_content = content;
+        }
       } catch (error) {
-        console.error('Error scraping article:', error);
+        console.error('Scraping error:', error);
       }
     }
 
-    console.log('Sending article data:', article.id);
     res.json(article);
   } catch (error) {
     console.error('Database error:', error);
