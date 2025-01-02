@@ -21,12 +21,12 @@ app.get('/api/articles/:id', async (req, res) => {
       .where({ id: req.params.id })
       .first();
     
-    console.log('Article found:', article);
-    
     if (!article) {
       return res.status(404).json({ error: 'Article not found' });
     }
 
+    // Log all article fields
+    console.log('Full article data:', JSON.stringify(article, null, 2));
     res.json(article);
   } catch (error) {
     console.error('Database error:', error);
