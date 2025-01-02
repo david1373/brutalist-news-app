@@ -13,7 +13,7 @@ const ArticleDetail = () => {
     const fetchArticle = async () => {
       try {
         const response = await axios.get(`http://localhost:3001/api/articles/${id}`);
-        console.log('Article data:', response.data);
+        console.log('Article response:', response.data);
         setArticle(response.data);
       } catch (err) {
         console.error('Error details:', err);
@@ -53,14 +53,33 @@ const ArticleDetail = () => {
               <span>{new Date(article.published_date || article.created_at).toLocaleDateString()}</span>
             </div>
             
-            <div className="prose prose-lg max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: article.original_content || 'Pending content fetch' }} />
+            <div className="prose prose-lg max-w-none space-y-4">
+              <div dangerouslySetInnerHTML={{ __html: article.original_content }} />
             </div>
+            
+            {article.images?.length > 0 && (
+              <div className="mt-8 grid grid-cols-2 gap-4">
+                {article.images.map((image, index) => (
+                  <figure key={index} className="relative">
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                    {image.caption && (
+                      <figcaption className="mt-2 text-sm text-gray-500">
+                        {image.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            )}
             
             {article.transformed_content && (
               <div className="mt-8 pt-8 border-t border-gray-200">
-                <h2 className="text-2xl font-bold mb-4">Kerouac's Take</h2>
-                <div className="prose prose-lg max-w-none italic">
+                <h2 className="text-2xl font-bold mb-4">Jack's Take</h2>
+                <div className="prose prose-lg max-w-none italic bg-gray-50 p-6 rounded-lg">
                   <div dangerouslySetInnerHTML={{ __html: article.transformed_content }} />
                 </div>
               </div>
