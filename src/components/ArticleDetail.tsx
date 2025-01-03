@@ -1,22 +1,24 @@
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { Article } from '@/types'
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import type { Article } from '@/types';
 
 export default function ArticleDetail({ id }: { id: string }) {
-  const [article, setArticle] = useState<Article | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [article, setArticle] = useState<Article | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`/api/articles/${id}`)
       .then(res => res.json())
       .then(data => {
-        setArticle(data)
-        setLoading(false)
-      })
-  }, [id])
+        setArticle(data);
+        setLoading(false);
+      });
+  }, [id]);
 
-  if (loading) return <div>Loading...</div>
-  if (!article) return <div>Article not found</div>
+  if (loading) return <div>Loading...</div>;
+  if (!article) return <div>Article not found</div>;
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-8">
@@ -44,5 +46,5 @@ export default function ArticleDetail({ id }: { id: string }) {
         ))}
       </div>
     </article>
-  )
+  );
 }

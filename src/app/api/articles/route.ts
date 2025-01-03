@@ -1,15 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import { scrapeArticles } from '@/services/scraper';
 
 export async function GET() {
-  const mockArticles = [{
-    id: '1',
-    title: 'Test Article',
-    content: 'Test content',
-    images: [{ url: 'https://leibal.com/test.jpg', caption: 'Test caption' }],
-    url: 'https://test.com',
-    source: 'Test Source',
-    date: new Date().toISOString()
-  }]
-
-  return NextResponse.json(mockArticles)
+  try {
+    const articles = await scrapeArticles();
+    return NextResponse.json(articles);
+  } catch (error) {
+    console.error('Failed to fetch articles:', error);
+    return NextResponse.json({ error: 'Failed to fetch articles' }, { status: 500 });
+  }
 }

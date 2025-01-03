@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Article } from '@/types';
+import type { Article } from '@/types';
 
-export function ArticleCard({ article }: { article: Article }) {
+export default function ArticleCard({ article }: { article: Article }) {
   return (
     <Link href={`/articles/${article.id}`} className="block">
       <article className="border rounded-lg overflow-hidden hover:shadow-lg transition-all">
