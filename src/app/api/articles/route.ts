@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
-import { getAllArticles } from '@/services/scraper'
 
 export async function GET() {
-  try {
-    const articles = await getAllArticles()
-    return NextResponse.json(articles)
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch articles' },
-      { status: 500 }
-    )
-  }
+  const mockArticles = [{
+    id: '1',
+    title: 'Test Article',
+    content: 'Test content',
+    images: [{ url: 'https://leibal.com/test.jpg', caption: 'Test caption' }],
+    url: 'https://test.com',
+    source: 'Test Source',
+    date: new Date().toISOString()
+  }]
+
+  return NextResponse.json(mockArticles)
 }
