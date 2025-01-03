@@ -1,21 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Article } from '@/types';
-import { ArticleCard } from './ArticleCard';
+import ArticleCard from './ArticleCard';
+import type { Article } from '@/types';
 
-export function ArticleList() {
+export default function ArticleList() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     fetch('/api/articles')
       .then(res => res.json())
-      .then(setArticles)
-      .finally(() => setLoading(false));
+      .then(setArticles);
   }, []);
-
-  if (loading) return <div>Loading articles...</div>;
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
